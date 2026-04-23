@@ -1,0 +1,43 @@
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Training artifacts and local workspace outputs
+logs/
+outputs/
+checkpoints/
+models/
+slides/
+tmp/
+temp/
+results/
+
+# Common experiment files
+*.log
+*.out
+*.err
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# W&B and Hugging Face caches
+wandb/
+.cache/
+
