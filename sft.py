@@ -115,6 +115,7 @@ def train(
     item_meta_path: str = "",
 ):
     set_seed(seed)
+    os.makedirs(output_dir, exist_ok=True)
     os.environ['WANDB_PROJECT'] = wandb_project
     category_dict = {"Industrial_and_Scientific": "industrial and scientific items", "Office_Products": "office products", "Toys_and_Games": "toys and games", "Sports": "sports and outdoors", "Books": "books"}
     print(category)
@@ -122,7 +123,7 @@ def train(
     assert (
         base_model
     ), "Please specify a --base_model, e.g. --base_model='decapoda-research/llama-7b-hf'"
-    gradient_accumulation_steps = batch_size // micro_batch_size
+    gradient_accumulation_steps = max(1, batch_size // micro_batch_size)
     
     device_map = "auto"
     world_size = int(os.environ.get("WORLD_SIZE", 1))
@@ -142,10 +143,12 @@ def train(
         print("Training from scratch!")
         
     tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+    original_vocab_size = len(tokenizer)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.pad_token_id = tokenizer.eos_token_id
     tokenizer.padding_side = "left"
-    
+    new_tokens = []
+
     if sid_index_path and os.path.exists(sid_index_path):
         print(f"Loading index from {sid_index_path}")
         token_extender = TokenExtender(

@@ -70,6 +70,7 @@ def train(
     torch.backends.cuda.enable_flash_sdp(False)  
     torch.backends.cuda.enable_mem_efficient_sdp(False)
     set_seed(seed)
+    os.makedirs(output_dir, exist_ok=True)
     
     category_dict = {"Industrial_and_Scientific": "industrial and scientific items", "Office_Products": "office products", "Toys_and_Games": "toys and games", "Sports": "sports and outdoors", "Books": "books"}
     print(category)
@@ -259,6 +260,7 @@ def train(
     
     os.environ['WANDB_PROJECT'] = wandb_project
     os.environ["WANDB_MODE"] = "offline"
+    report_to = "wandb" if wandb_project or wandb_run_name else "none"
 
     training_args = GRPOConfig(output_dir=output_dir,
                                 save_steps=0.1,
@@ -282,7 +284,7 @@ def train(
                                 optim="paged_adamw_32bit",
                                 lr_scheduler_type="cosine", 
                                 save_strategy="steps",
-                                report_to="wandb",
+                                report_to=report_to,
                                 run_name=wandb_run_name,
                             )
     trainer = ReReTrainer(

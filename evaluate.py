@@ -51,13 +51,13 @@ def main(
 ):
     random.seed(seed)
     set_seed(seed)
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     category_dict = {"Industrial_and_Scientific": "industrial and scientific items", "Office_Products": "office products", "Toys_and_Games": "toys and games", "Sports": "sports and outdoors", "Books": "books"}
     category = category_dict[category]
     print(category)
 
     model = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=torch.bfloat16, device_map="auto")
     model.eval()
+    model_device = next(model.parameters()).device
     with open(info_file, 'r') as f:
         info = f.readlines()
         # Parse new format: semantic_id \t item_title \t item_id
@@ -189,8 +189,8 @@ def main(
             logits_processor = LogitsProcessorList([clp])
 
             generation_output = model.generate(
-                torch.tensor(padding_encodings["input_ids"]).to(device),
-                attention_mask=torch.tensor(attention_mask).to(device),
+                torch.tensor(padding_encodings["input_ids"]).to(model_device),
+                attention_mask=torch.tensor(attention_mask).to(model_device),
                 generation_config=generation_config,
                 return_dict_in_generate=True,
                 output_scores=True,
@@ -209,7 +209,7 @@ def main(
         real_outputs = [output[i * num_beams: (i + 1) * num_beams] for i in range(len(output) // num_beams)]
         return real_outputs
     
-    model = model.to(device)
+    model = model.to(model_device)
 
     from tqdm import tqdm
     outputs = []
@@ -237,7 +237,6 @@ def main(
 
 if __name__ == '__main__':
     fire.Fire(main)
-
 
 
 
